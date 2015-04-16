@@ -1,0 +1,16 @@
+{
+  "name": "config-manager-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^2.9.24",
+    "lodash": "^3.6.0",
+    "request-promise": "^0.4.2"
+  }
+}
