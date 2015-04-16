@@ -14,7 +14,7 @@ MissingParamError.prototype.constructor = MissingParamError;
 var ConfigManager = function(_config) {
 
     this.config = {
-        baseUrl: null,
+        baseUrl: "http://config.raptor.local",
         group: 'preferences',
         userid: null
     };
