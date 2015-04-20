@@ -7,12 +7,6 @@ if(process && process.exit) {
     rp = require('request-promise');
 }
 
-if(window && window.location) {
-    rp = function(opts) {
-        return require('jquery').ajax(opts)
-    };
-}
-
 var deepmerge = function(target, src) {
     var array = Array.isArray(src);
     var dst = array && [] || {};
