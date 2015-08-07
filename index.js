@@ -48,14 +48,6 @@ var deepmerge = function(target, src) {
     return dst;
 };
 
-var MissingParamError = function() {
-    var args = Array.prototype.slice.call(arguments);
-    Error.apply(this, args);
-};
-
-MissingParamError.prototype = Object.create(Error);
-MissingParamError.prototype.constructor = MissingParamError;
-
 var ConfigManager = function(_config) {
 
     this.config = {
@@ -95,11 +87,11 @@ ConfigManager.prototype.getUrl = function(param, group, userid) {
     userid = userid || this.config.userid;
 
     if(!group) {
-        throw new MissingParamError("At least a group has to be specified");
+        throw new Error("At least a group has to be specified");
     }
 
     if(!userid) {
-        throw new MissingParamError("An userid has to be specified");
+        throw new Error("An userid has to be specified");
     }
 
     var list = [
