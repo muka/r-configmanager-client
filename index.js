@@ -127,10 +127,16 @@ ConfigManager.prototype.save = function(value, group, param) {
 
     param = param || null;
 
+    // var jsonVal = value instanceof Array || typeof value === 'object' ? JSON.stringify(value) : value
+    var jsonVal = value
+
     var options = this.getOpts({
+        headers: {
+            'Content-Type': 'application/json'
+        },
         uri : this.getUrl(param, group),
         method : 'PUT',
-        body: JSON.stringify(value),
+        body: jsonVal,
     });
 
     return rp(options);
