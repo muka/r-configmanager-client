@@ -1,52 +1,7 @@
 
 var Promise = require('bluebird');
-
-var rp;
-
-if(process && process.exit) {
-    rp = require('request-promise');
-}
-
-var deepmerge = function(target, src) {
-    var array = Array.isArray(src);
-    var dst = array && [] || {};
-
-    if (array) {
-        target = target || [];
-        dst = dst.concat(target);
-        src.forEach(function(e, i) {
-            if (typeof dst[i] === 'undefined') {
-                dst[i] = e;
-            } else if (typeof e === 'object') {
-                dst[i] = deepmerge(target[i], e);
-            } else {
-                if (target.indexOf(e) === -1) {
-                    dst.push(e);
-                }
-            }
-        });
-    } else {
-        if (target && typeof target === 'object') {
-            Object.keys(target).forEach(function (key) {
-                dst[key] = target[key];
-            })
-        }
-        Object.keys(src).forEach(function (key) {
-            if (typeof src[key] !== 'object' || !src[key]) {
-                dst[key] = src[key];
-            }
-            else {
-                if (!target[key]) {
-                    dst[key] = src[key];
-                } else {
-                    dst[key] = deepmerge(target[key], src[key]);
-                }
-            }
-        });
-    }
-
-    return dst;
-};
+var _ = require('lodash')
+var rp = require('request-promise');
 
 var ConfigManager = function(_config) {
 
@@ -57,10 +12,10 @@ var ConfigManager = function(_config) {
     };
 
     if(_config) {
-        this.config = deepmerge(this.config, _config);
+        this.config = _.assign(this.config, _config);
     }
 
-};
+}
 
 ConfigManager.prototype.handleResponse = function(body, response) {
 
@@ -69,17 +24,7 @@ ConfigManager.prototype.handleResponse = function(body, response) {
     }
 
     return body;
-};
-ConfigManager.prototype.getOpts = function(_opts) {
-
-    var options = deepmerge({
-        json: true,
-        transform: this.handleResponse
-    }, _opts);
-
-//    console.log('%s %s', options.method, options.uri);
-    return options;
-};
+}
 
 ConfigManager.prototype.getUrl = function(param, group, userid) {
 
@@ -107,62 +52,87 @@ ConfigManager.prototype.getUrl = function(param, group, userid) {
     return list.join('/');
 };
 
-ConfigManager.prototype.get = function(param, group) {
+/**
+ * @return Promise
+ */
+ConfigManager.prototype.getRequestParams = function(param, group) {
 
     param = param || null;
 
-    var options = this.getOpts({
-        uri : this.getUrl(param, group),
-        method : 'GET',
-    });
+    var options = {}
+    try {
+        options = _.assign({
+            json: true,
+            transform: this.handleResponse
+        }, {
+            uri : this.getUrl(param, group),
+            method : 'GET',
+        })
+    }
+    catch(e) {
+        return Promise.reject(e)
+    }
+    return Promise.resolve(options)
+}
 
-    return rp(options);
-};
+/**
+ * @param String key of the value
+ * @param String group of the value
+ */
+ConfigManager.prototype.get = function(param, group) {
+    return this.getRequestParams(param, group).then(rp)
+}
 
+/**
+ * @param String key of the value
+ * @param mixed value value to set
+ */
 ConfigManager.prototype.set = function(param, value, group) {
-    return this.save(value, group, param);
-};
+    return this.save(value, group, param)
+}
 
 ConfigManager.prototype.save = function(value, group, param) {
+    return this.getRequestParams(param, group)
+        .then(function(options) {
 
-    param = param || null;
+            options.headers = options.headers || {}
+            options.headers['Content-Type'] = 'application/json'
+            options.method = 'PUT'
+            options.body = value
 
-    // var jsonVal = value instanceof Array || typeof value === 'object' ? JSON.stringify(value) : value
-    var jsonVal = value
+            return Promise.resolve(options)
+        })
+        .then(rp)
+}
 
-    var options = this.getOpts({
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        uri : this.getUrl(param, group),
-        method : 'PUT',
-        body: jsonVal,
-    });
-
-    return rp(options);
-};
-
+/**
+ * @param Object the new group of values to set
+ * @param String group of the values
+ * @param String key of the value
+ */
 ConfigManager.prototype.reset = function(value, group, param) {
+    return this.getRequestParams(param, group)
+        .then(function(options) {
 
-    var options = this.getOpts({
-        uri : this.getUrl(param, group),
-        method : 'POST',
-        body: value,
-    });
+            options.method = 'POST'
+            options.body = value
 
-    return rp(options);
-};
+            return Promise.resolve(options)
+        })
+        .then(rp)
+}
 
+/**
+ * @param Object the new group of values to set
+ * @param String key of the value
+ */
 ConfigManager.prototype.remove = function(param, group) {
-
-    param = param || null;
-
-    var options = this.getOpts({
-        uri : this.getUrl(param, group),
-        method : 'POST',
-    });
-
-    return rp(options);
-};
+    return this.getRequestParams(param, group)
+        .then(function(options) {
+            options.method = 'DELETE'
+            return Promise.resolve(options)
+        })
+        .then(rp)
+}
 
 module.exports = ConfigManager;
