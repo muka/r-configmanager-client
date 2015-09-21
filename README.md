@@ -1,0 +1,1 @@
+Client for r-configmanager
