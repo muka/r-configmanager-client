@@ -1,16 +1,11 @@
+// @TODO: move to tests
 
 var ConfigManager = require('./');
 
 var client = new ConfigManager({
-    baseUrl: "http://config.raptor.local",
-    userid: "415c0b7e-dd61-4633-98e6-ac0184dda324"
+    baseUrl: "http://localhost:3000/config",
+    userid: "lc"
 });
-
-//client
-//    .get('test', 'workflow')
-//    .then(console.log)
-//    .catch(console.warn)
-//    .finally(function() { console.log("Completed GET"); })
 
 var _val = 1.3;
 
@@ -21,12 +16,9 @@ client
         return client.get('test', 'workflow')
     })
     .then(function(res) {
-
         console.log("Result is: %s", res);
-
         console.log((_val === res) ?
                 "It works!" : "Values are not equals?")
-
     })
     .catch(function(e) {
         console.warn("An error occured!");
