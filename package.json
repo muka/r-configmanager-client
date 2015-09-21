@@ -1,5 +1,5 @@
 {
-  "name": "raptor-configmanager-client",
+  "name": "config-manager-client",
   "description": "",
   "main": "index.js",
   "scripts": {
